@@ -1,4 +1,3 @@
-```python
 # streamlit_app.py
 
 import pandas as pd                            # Uso pandas para leer y procesar mis datos
