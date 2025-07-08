@@ -151,4 +151,3 @@ st.write("**Recomendaciones:**")
 st.write("1. Fortalecer la vigilancia epidemiológica en los distritos más críticos.")
 st.write("2. Orientar campañas educativas a los grupos de edad más vulnerables.")
 st.write("3. Mantener actualizada la base de datos y considerar agregar otras capas geoespaciales.")
-```
