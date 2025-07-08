@@ -77,9 +77,9 @@ st.plotly_chart(graph_line, use_container_width=True)
 # 4. Distribución geográfica por Distrito
 st.subheader("3. Distribución de casos por distrito")
 # Agrupo casos por distrito
-choropleth_df = df.groupby("DISTRITO").size().reset_index(name="Casos")
+district_counts = df.groupby("DISTRITO").size().reset_index(name="Casos")
 # Diccionario con coordenadas aproximadas de los distritos de Piura
-# (Completa o ajusta estas coordenadas según tu información)
+# (Completa este diccionario con todos los distritos de tu CSV para que aparezcan en el mapa)
 district_coords = {
     "Piura": [-5.1945, -80.6328],
     "Castilla": [-5.2050, -80.6250],
@@ -91,38 +91,47 @@ district_coords = {
     "La Unión": [-5.2078, -80.5672],
     "Las Lomas": [-5.2465, -80.5798],
     "Tambogrande": [-4.9680, -80.6198],
+    # ...Agrega aquí los demás distritos
 }
-# Inicializo el mapa centrado en Piura
-decentral = [-5.1945, -80.6328]
-m = folium.Map(location=decentral, zoom_start=9)
-# Agrego un marcador para cada distrito con un círculo proporcional a la cantidad de casos
-for _, row in choropleth_df.iterrows():
+# Inicializo el mapa centrado en la región de Piura
+dept_center = [-5.1945, -80.6328]
+mapa = folium.Map(location=dept_center, zoom_start=9)
+# Marco cada distrito para el que tenga coordenadas definidas
+def missing_coords():
+    """Recolecta distritos sin coordenadas definidas"""
+    return [row["DISTRITO"] for _, row in district_counts.iterrows() if row["DISTRITO"] not in district_coords]
+
+for _, row in district_counts.iterrows():
     distrito = row["DISTRITO"]
     casos = row["Casos"]
     coords = district_coords.get(distrito)
     if coords:
         folium.CircleMarker(
             location=coords,
-            radius=5 + casos**0.5,  # ajusto tamaño para visualización
+            radius=5 + casos ** 0.5,  # ajusto tamaño para visualización
             color="blue",
             fill=True,
             fill_opacity=0.6,
             popup=f"{distrito}: {casos} casos"
-        ).add_to(m)
-    else:
-        # Aviso al usuario si faltan coordenadas
-        st.warning(f"No hay coordenadas definidas para el distrito {distrito}")
-# Muestro el mapa con los marcadores
-folium_static(m)
+        ).add_to(mapa)
+# Muestro el mapa con los marcadores que sí tienen coordenadas
+folium_static(mapa)
+
+# Informo al usuario si faltan coordenadas para algunos distritos
+faltantes = missing_coords()
+if faltantes:
+    st.write(f"Nota: No se mostraron {len(faltantes)} distritos en el mapa por falta de coordenadas. Completa 'district_coords' para incluirlos.")
+
 # Además, presento un gráfico de pastel para ver proporciones
+title_pie = "Proporción de casos por distrito"
 pie = px.pie(
-    choropleth_df,
+    district_counts,
     values="Casos", names="DISTRITO",
-    title="Proporción de casos por distrito"
+    title=title_pie
 )
 st.plotly_chart(pie, use_container_width=True)
 
-# 5. Selección de enfermedad y foto del zancudo Selección de enfermedad y foto del zancudo
+# 5. Selección de enfermedad y foto del zancudo Selección de enfermedad y foto del zancudo Selección de enfermedad y foto del zancudo
 st.subheader("4. Elige una enfermedad y conoce el zancudo asociado")
 # Diccionario manual de enfermedades a imágenes
 zancudos = {
