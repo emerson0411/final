@@ -76,35 +76,53 @@ st.plotly_chart(graph_line, use_container_width=True)
 
 # 4. Distribución geográfica por Distrito
 st.subheader("3. Distribución de casos por distrito")
+# Agrupo casos por distrito
 choropleth_df = df.groupby("DISTRITO").size().reset_index(name="Casos")
-# Indico al profesor que necesita el GeoJSON en el repo para que se muestre el mapa
-st.write("(Asegúrate de tener 'piura_distritos.geojson' en tu repositorio para ver el mapa.)")
-try:
-    # Cargo y muestro el mapa folium
-    geojson = json.load(open("piura_distritos.geojson", encoding="utf-8"))
-    m = folium.Map(location=[-5.1945, -80.6328], zoom_start=9)
-    folium.Choropleth(
-        geo_data=geojson, data=choropleth_df,
-        columns=["DISTRITO", "Casos"],
-        key_on="feature.properties.NOMDIST",
-        fill_opacity=0.7, line_opacity=0.2, legend_name="Casos"
-    ).add_to(m)
-    folium_static(m)  # Muestro el mapa
-    # También presento un gráfico de pastel para anteponer proporciones
-    pie = px.pie(
-        choropleth_df, values="Casos", names="DISTRITO",
-        title="Proporción de casos por distrito"
-    )
-    st.plotly_chart(pie, use_container_width=True)
-except FileNotFoundError:
-    st.error("GeoJSON no encontrado. Usando gráfico de pastel como respaldo.")
-    pie = px.pie(
-        choropleth_df, values="Casos", names="DISTRITO",
-        title="Proporción de casos por distrito (fallback)"
-    )
-    st.plotly_chart(pie, use_container_width=True)
+# Diccionario con coordenadas aproximadas de los distritos de Piura
+# (Completa o ajusta estas coordenadas según tu información)
+district_coords = {
+    "Piura": [-5.1945, -80.6328],
+    "Castilla": [-5.2050, -80.6250],
+    "Veintiséis De Octubre": [-5.1840, -80.6300],
+    "La Arena": [-5.1240, -80.6750],
+    "Catacaos": [-5.1575, -80.6216],
+    "Cura Mori": [-5.3150, -80.7010],
+    "El Tallan": [-5.2900, -80.6300],
+    "La Unión": [-5.2078, -80.5672],
+    "Las Lomas": [-5.2465, -80.5798],
+    "Tambogrande": [-4.9680, -80.6198],
+}
+# Inicializo el mapa centrado en Piura
+decentral = [-5.1945, -80.6328]
+m = folium.Map(location=decentral, zoom_start=9)
+# Agrego un marcador para cada distrito con un círculo proporcional a la cantidad de casos
+for _, row in choropleth_df.iterrows():
+    distrito = row["DISTRITO"]
+    casos = row["Casos"]
+    coords = district_coords.get(distrito)
+    if coords:
+        folium.CircleMarker(
+            location=coords,
+            radius=5 + casos**0.5,  # ajusto tamaño para visualización
+            color="blue",
+            fill=True,
+            fill_opacity=0.6,
+            popup=f"{distrito}: {casos} casos"
+        ).add_to(m)
+    else:
+        # Aviso al usuario si faltan coordenadas
+        st.warning(f"No hay coordenadas definidas para el distrito {distrito}")
+# Muestro el mapa con los marcadores
+folium_static(m)
+# Además, presento un gráfico de pastel para ver proporciones
+pie = px.pie(
+    choropleth_df,
+    values="Casos", names="DISTRITO",
+    title="Proporción de casos por distrito"
+)
+st.plotly_chart(pie, use_container_width=True)
 
-# 5. Selección de enfermedad y foto del zancudo
+# 5. Selección de enfermedad y foto del zancudo Selección de enfermedad y foto del zancudo
 st.subheader("4. Elige una enfermedad y conoce el zancudo asociado")
 # Diccionario manual de enfermedades a imágenes
 zancudos = {
