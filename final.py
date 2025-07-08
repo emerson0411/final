@@ -1,3 +1,5 @@
+# streamlit_app.py
+
 import pandas as pd                            # Uso pandas para leer y procesar mis datos
 import plotly.express as px                   # Uso plotly.express para crear gráficos interactivos
 import streamlit as st                        # Uso Streamlit para montar la interfaz web
@@ -74,7 +76,7 @@ graph_line = px.line(
 )
 st.plotly_chart(graph_line, use_container_width=True)
 
-# 4. Distribución geográfica por Distrito
+# 4. Distribución de casos por Distrito
 st.subheader("3. Distribución de casos por distrito")
 # Agrupo casos por distrito
 district_counts = df.groupby("DISTRITO").size().reset_index(name="Casos")
@@ -96,31 +98,18 @@ district_coords = {
 # Inicializo el mapa centrado en la región de Piura
 dept_center = [-5.1945, -80.6328]
 mapa = folium.Map(location=dept_center, zoom_start=9)
-# Marco cada distrito para el que tenga coordenadas definidas
-def missing_coords():
-    """Recolecta distritos sin coordenadas definidas"""
-    return [row["DISTRITO"] for _, row in district_counts.iterrows() if row["DISTRITO"] not in district_coords]
-
+# Agrego un marcador por distrito mostrando el número total de casos
 for _, row in district_counts.iterrows():
     distrito = row["DISTRITO"]
     casos = row["Casos"]
     coords = district_coords.get(distrito)
     if coords:
-        folium.CircleMarker(
+        folium.Marker(
             location=coords,
-            radius=5 + casos ** 0.5,  # ajusto tamaño para visualización
-            color="blue",
-            fill=True,
-            fill_opacity=0.6,
             popup=f"{distrito}: {casos} casos"
         ).add_to(mapa)
-# Muestro el mapa con los marcadores que sí tienen coordenadas
+# Muestro el mapa con los marcadores
 folium_static(mapa)
-
-# Informo al usuario si faltan coordenadas para algunos distritos
-faltantes = missing_coords()
-if faltantes:
-    st.write(f"Nota: No se mostraron {len(faltantes)} distritos en el mapa por falta de coordenadas. Completa 'district_coords' para incluirlos.")
 
 # Además, presento un gráfico de pastel para ver proporciones
 title_pie = "Proporción de casos por distrito"
@@ -131,7 +120,7 @@ pie = px.pie(
 )
 st.plotly_chart(pie, use_container_width=True)
 
-# 5. Selección de enfermedad y foto del zancudo Selección de enfermedad y foto del zancudo Selección de enfermedad y foto del zancudo
+# 5. Selección de enfermedad y foto del zancudo Selección de enfermedad y foto del zancudo Selección de enfermedad y foto del zancudo Selección de enfermedad y foto del zancudo
 st.subheader("4. Elige una enfermedad y conoce el zancudo asociado")
 # Diccionario manual de enfermedades a imágenes
 zancudos = {
@@ -164,3 +153,4 @@ st.write("**Recomendaciones:**")
 st.write("1. Fortalecer la vigilancia epidemiológica en los distritos más críticos.")
 st.write("2. Orientar campañas educativas a los grupos de edad más vulnerables.")
 st.write("3. Mantener actualizada la base de datos y considerar agregar otras capas geoespaciales.")
+```
