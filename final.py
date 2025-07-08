@@ -1,5 +1,3 @@
-# streamlit_app.py
-
 import pandas as pd                            # Uso pandas para leer y procesar mis datos
 import plotly.express as px                   # Uso plotly.express para crear gráficos interactivos
 import streamlit as st                        # Uso Streamlit para montar la interfaz web
