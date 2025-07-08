@@ -139,4 +139,4 @@ st.write("Recomendaciones:")
 st.write("1. Fortalecer la vigilancia epidemiológica y laboratorio en los distritos más críticos.")
 st.write("2. Enfocar campañas educativas en los grupos etarios con mayor incidencia.")
 st.write("3. Mantener actualizada la base de datos y explorar la inclusión de mapas geoespaciales con GeoJSON.")
-```
+
